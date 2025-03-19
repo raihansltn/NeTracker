@@ -1,7 +1,9 @@
-#include <asm/ptrace.h>
-#include <asm/tcp.h>
+#include <linux/bpf.h>
+#include <linux/ptrace.h>
+#include <linux/tcp.h>
 #include <net/sock.h>
 #include <bpf/bpf_helpers.h>
+#include <bpf/bpf_tracing.h>
 
 //this where I define the data structure that will be used to store the connection information
 struct data_t {
@@ -28,18 +30,20 @@ int trace_connect(struct pt_regs *ctx, struct sock *sk) {
     u32 pid = bpf_get_current_pid_tgid();
     struct data_t data = {};
     
+    bpf_probe_read_kernel(&data.saddr, sizeof(data.saddr), &sk->__sk_common.skc_rcv_saddr);
+    bpf_probe_read_kernel(&data.daddr, sizeof(data.daddr), &sk->__sk_common.skc_daddr);
+    bpf_probe_read_kernel(&data.sport, sizeof(data.sport), &sk->__sk_common.skc_num);
+    u16 dport;
+    bpf_probe_read_kernel(&dport, sizeof(dport), &sk->__sk_common.skc_dport);
+    data.dport = bpf_ntohs(dport);
+
     data.pid = pid;
-    data.saddr = sk->__sk_common.skc_rcv_saddr;
-    data.daddr = sk->__sk_common.skc_daddr;
-    data.sport = sk->__sk_common.skc_num;
-    data.dport = bpf_ntohs(sk->__sk_common.skc_dport);
     data.start_time = bpf_ktime_get_ns();
 
     bpf_map_update_elem(&connections, &pid, &data, BPF_ANY);
 
-    //print connection info to the trace pipe
-    bpf_trace_printk("Connect: PID=%d SADDR=%d DADDR=%d SPORT=%d DPORT=%d\\n", 
-                    data.pid, data.saddr, data.daddr, data.sport, data.dport);
+    bpf_trace_printk("Connect: PID=%d SADDR=%pI4 DADDR=%pI4 SPORT=%d DPORT=%d\\n",
+                     data.pid, &data.saddr, &data.daddr, data.sport, data.dport);
 
     return 0;
     }
