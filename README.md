@@ -43,7 +43,8 @@ pip install -r requirements.txt
 ```
 
 - EunomiaVer
-1. Compile and deploy the program first, by running the script.
+1. Open netracker_reloader.sh, and change the interface the same as your device
+2. Compile and deploy the program, by running the script.
     ```bash
     cd EunomiaVer
     chmod +x netracker_reload.sh
@@ -59,7 +60,8 @@ pip install -r requirements.txt
     ```
 
 - BCCVer (Untested)
-1. Run the Python Script
+1. Open NeTracker.py, and change the interface (if necessary)
+2. Run the Python Script
     ```bash
     user@device:~/NeTracker$ cd BCCVer
     user@device:~/NeTracker/BCCVer$ sudo python3 NeTracker.py
@@ -91,6 +93,11 @@ user@device:~/NeTracker/BCCVer$ sudo python3 NeTracker.py
 [TC] Total RTT (SYN - FIN-ACK) for 10.0.0.5:22 -> 10.0.0.10:5000: 1800000 ns
 [TC] Total RTT (SYN - FIN-ACK) for 192.168.1.105:53 -> 192.168.1.1:53: 30000 ns
 ```
+
+## Misc
+- Make sure to set the vmlinux.h on NeTracker.bpf.c for EunomiaVer, if you don't have it, you can generate by using command ```bpftool btf dump file /sys/kernel/btf/vmlinux format c > vmlinux.h```.
+- If you want to test the dummy packets of SYN and FIN-ACK, you can run the ```custom_packet.py``` in ```misc``` directory. Make sure to config the file first.
+- You can host a custom http server by running the ```http_server.py``` file and send packets to it.
 
 ##### This is an ongoing project.
 Update Notes:
