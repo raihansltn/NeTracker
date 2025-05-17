@@ -1,6 +1,9 @@
 # NeTracker
 Written by: Raihan Sultan Pasha Basuki
 
+#### For a quick read: 
+[![View PDF](https://img.shields.io/badge/PDF-Download-blue)](assets/NeTracker_Report.pdf)
+
 ## Overview
 A network traffic tracker that operates at the kernel level. It is implemented using eBPF with C. NeTracker uses the four-tuple of 5-tuple as the key, which is stored in conn_map. The key, captured during SYN packet capture in the Ingress TC filter, is then used to capture the FIN-ACK packet in the Egress TC filter, thus measuring the duration of a full connection.
 
@@ -99,7 +102,16 @@ user@device:~/NeTracker/BCCVer$ sudo python3 NeTracker.py
 - If you want to test the dummy packets of SYN and FIN-ACK, you can run the ```custom_packet.py``` in ```misc``` directory. Make sure to config the file first.
 - You can host a custom http server by running the ```http_server.py``` file and send packets to it.
 
-##### This is an ongoing project.
+## Test Result
+As seen, the 2 images on the following are the result of curl time using {time_total} flag representing the total time in seconds, from the start until the transfer is completed, which covered SYN to FIN-ACK. 
+![curling to test the filter](assets/curl.png)
+![test result for curl](assets/result_curl.png)
+
+To the bottom, there are 2 images result when I sent a connection through browser to http server. Both tests, resulted in 1.000.000 to 9.000.000 ns differences, because the filters trace time both when SYN hit ingress and FIN ACK hit egress respectively, while the curl measured the total elapsed time of the entire request.
+![sending a request to the http.server to test the filter](assets/http.png)
+![test result for http request](assets/result_http.png)
+
+#### This is an ongoing project.
 Update Notes:
 - Initial Commit - March 17th, 2025: To monitor every incoming connection, what port, what ip, and spend how many miliseconds? (How to map time in kprobe? how to make any difference on what are you currently tracking?)
 - V1.2 - March 22nd, 2025: Push multiple versions of NeTracker
